@@ -1,0 +1,194 @@
+[
+  {
+    "export_all_public_tables": {
+      "tipos": [
+        {
+          "id": "01da017b-b48b-4c22-91af-b6e4dc327d16",
+          "nome": "Incolor",
+          "created_at": "2025-12-14T15:13:08.141369+00:00"
+        },
+        {
+          "id": "52a4d476-800b-4597-b994-54336f6e3efd",
+          "nome": "Photo",
+          "created_at": "2025-12-14T15:13:08.141369+00:00"
+        }
+      ],
+      "faltas": [
+        {
+          "id": "f25003b2-116f-4d91-97ad-f61ba63f51fe",
+          "cil": -1.25,
+          "esf": -2.5,
+          "tipo_id": "01da017b-b48b-4c22-91af-b6e4dc327d16",
+          "indice_id": "e856a580-ef9b-4b56-bac3-8e7d39843def",
+          "created_at": "2026-01-05T12:28:04.296083+00:00",
+          "empresa_id": "455fe76e-fc43-4167-bc4e-67a2950766bd",
+          "quantidade": 5,
+          "updated_at": "2026-01-05T12:28:04.296083+00:00",
+          "usuario_id": "e095c2b4-0a2c-44ce-96e8-4ac532650c6e",
+          "tratamento_id": "674215a7-d497-4c0d-ab09-6db80b998a5b"
+        },
+        {
+          "id": "60a8a7f8-64df-4a7d-89cf-c4f12005298d",
+          "cil": -1,
+          "esf": 1,
+          "tipo_id": "01da017b-b48b-4c22-91af-b6e4dc327d16",
+          "indice_id": "e856a580-ef9b-4b56-bac3-8e7d39843def",
+          "created_at": "2026-01-05T12:28:59.367275+00:00",
+          "empresa_id": null,
+          "quantidade": 1,
+          "updated_at": "2026-01-05T12:28:59.367275+00:00",
+          "usuario_id": "e095c2b4-0a2c-44ce-96e8-4ac532650c6e",
+          "tratamento_id": "674215a7-d497-4c0d-ab09-6db80b998a5b"
+        }
+      ],
+      "compras": [
+        {
+          "id": "fb07c504-5692-414e-9ea5-c1ca827d59b7",
+          "status": "Pendente",
+          "descricao": "Pedido Teste 1 Admin",
+          "created_at": "2026-01-05T12:28:04.296083+00:00",
+          "fornecedor": "Hoya",
+          "updated_at": "2026-01-05T12:28:04.296083+00:00",
+          "data_compra": "2026-01-05",
+          "valor_total": 1500
+        },
+        {
+          "id": "1e6aa27f-e7ff-4535-b886-930a93abb812",
+          "status": "Pago",
+          "descricao": "Lentes Visão Simples Admin",
+          "created_at": "2026-01-05T12:28:04.296083+00:00",
+          "fornecedor": "Essilor",
+          "updated_at": "2026-01-05T12:28:04.296083+00:00",
+          "data_compra": "2026-01-05",
+          "valor_total": 3200.5
+        }
+      ],
+      "indices": [
+        {
+          "id": "e856a580-ef9b-4b56-bac3-8e7d39843def",
+          "nome": "1.49",
+          "created_at": "2025-12-14T15:13:08.141369+00:00"
+        },
+        {
+          "id": "8bd541c4-18a5-45d9-b292-f7fb7a29a85e",
+          "nome": "1.53",
+          "created_at": "2025-12-14T15:13:08.141369+00:00"
+        },
+        {
+          "id": "211d707b-8401-4275-9c8c-251612a1a019",
+          "nome": "1.56",
+          "created_at": "2025-12-14T15:13:08.141369+00:00"
+        },
+        {
+          "id": "c5aef34d-1161-4a0c-9d10-e28de189bbd6",
+          "nome": "1.59",
+          "created_at": "2025-12-14T15:13:08.141369+00:00"
+        },
+        {
+          "id": "6237bb1b-79e0-4dd7-8f25-00bfeb627b1c",
+          "nome": "1.60",
+          "created_at": "2025-12-14T15:13:08.141369+00:00"
+        },
+        {
+          "id": "ed44f871-b6d1-465f-814b-550c33c664a6",
+          "nome": "1.61",
+          "created_at": "2025-12-14T15:13:08.141369+00:00"
+        },
+        {
+          "id": "358cf876-3398-4d49-8908-5099943b4ec7",
+          "nome": "1.67",
+          "created_at": "2025-12-14T15:13:08.141369+00:00"
+        },
+        {
+          "id": "34eadd00-b02f-4e0a-a271-e758f91d94ba",
+          "nome": "1.74",
+          "created_at": "2025-12-14T15:13:08.141369+00:00"
+        }
+      ],
+      "empresas": [
+        {
+          "id": "455fe76e-fc43-4167-bc4e-67a2950766bd",
+          "nome": "AMX",
+          "tipo": "Fornecedor",
+          "status": "Ativa",
+          "created_at": "2025-12-14T15:13:08.141369+00:00",
+          "deleted_at": null,
+          "updated_at": "2025-12-14T15:13:08.141369+00:00",
+          "contato_nome": null,
+          "contato_email": null
+        },
+        {
+          "id": "fbd5d682-fa51-4dc5-b9a0-1ba8a857c397",
+          "nome": "Master",
+          "tipo": "Matriz",
+          "status": "Ativa",
+          "created_at": "2025-12-14T15:13:08.141369+00:00",
+          "deleted_at": null,
+          "updated_at": "2025-12-14T15:13:08.141369+00:00",
+          "contato_nome": null,
+          "contato_email": null
+        },
+        {
+          "id": "e5aca405-aa30-44ea-8f28-5455a850e7cf",
+          "nome": "Ultra Optics",
+          "tipo": "Fornecedor",
+          "status": "Ativa",
+          "created_at": "2025-12-14T15:13:08.141369+00:00",
+          "deleted_at": null,
+          "updated_at": "2025-12-14T15:13:08.141369+00:00",
+          "contato_nome": null,
+          "contato_email": null
+        },
+        {
+          "id": "515d34b7-a1ea-4bf2-ad0f-470091c78dec",
+          "nome": "GBO",
+          "tipo": "Fornecedor",
+          "status": "Ativa",
+          "created_at": "2025-12-14T15:13:08.141369+00:00",
+          "deleted_at": null,
+          "updated_at": "2025-12-14T15:13:08.141369+00:00",
+          "contato_nome": null,
+          "contato_email": null
+        }
+      ],
+      "usuarios": [
+        {
+          "id": "e095c2b4-0a2c-44ce-96e8-4ac532650c6e",
+          "nome": "Junior",
+          "role": "Administrador",
+          "email": "junior@amx.com",
+          "status": "Active",
+          "initials": null,
+          "avatar_url": null,
+          "created_at": "2026-01-05T12:17:37.423858+00:00",
+          "deleted_at": null,
+          "empresa_id": "455fe76e-fc43-4167-bc4e-67a2950766bd",
+          "updated_at": "2026-01-05T12:17:37.423858+00:00",
+          "last_active": "2026-01-05T12:17:37.423858+00:00"
+        }
+      ],
+      "tratamentos": [
+        {
+          "id": "c033a89e-5523-4d78-aa6d-3367b4f70fc9",
+          "nome": "Incolor",
+          "created_at": "2025-12-14T15:13:08.141369+00:00"
+        },
+        {
+          "id": "674215a7-d497-4c0d-ab09-6db80b998a5b",
+          "nome": "AR",
+          "created_at": "2025-12-14T15:13:08.141369+00:00"
+        },
+        {
+          "id": "cb168131-f741-4c12-b0f0-8757e6b24e5a",
+          "nome": "Filtro Azul (Verde)",
+          "created_at": "2025-12-14T15:13:08.141369+00:00"
+        },
+        {
+          "id": "8710c8b9-88e9-47c3-af62-ddf65cb3675d",
+          "nome": "BlueCut (Azul)",
+          "created_at": "2025-12-14T15:13:08.141369+00:00"
+        }
+      ]
+    }
+  }
+]

@@ -1,0 +1,84 @@
+<testsuites id="" name="" tests="13" failures="0" skipped="9" errors="0" time="73.162946">
+<testsuite name="empresas-fixed.spec.ts" timestamp="2025-12-30T14:44:31.946Z" hostname="chromium" tests="13" failures="0" skipped="9" time="129.836" errors="0">
+<testcase name="Empresas - Fluxos Críticos › deve carregar a página de empresas com sucesso" classname="empresas-fixed.spec.ts" time="7.391">
+</testcase>
+<testcase name="Empresas - Fluxos Críticos › deve exibir lista de empresas" classname="empresas-fixed.spec.ts" time="10.508">
+</testcase>
+<testcase name="Empresas - Fluxos Críticos › deve abrir modal de criação ao clicar em &quot;Nova Empresa&quot;" classname="empresas-fixed.spec.ts" time="10.189">
+<properties>
+<property name="skip" value="">
+</property>
+</properties>
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Empresas - Fluxos Críticos › deve preencher formulário de criação" classname="empresas-fixed.spec.ts" time="10.096">
+<properties>
+<property name="skip" value="">
+</property>
+</properties>
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Empresas - Fluxos Críticos › deve mostrar erro de validação ao tentar criar sem nome" classname="empresas-fixed.spec.ts" time="10.114">
+<properties>
+<property name="skip" value="">
+</property>
+</properties>
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Empresas - Fluxos Críticos › deve criar uma nova empresa com sucesso" classname="empresas-fixed.spec.ts" time="10.213">
+<properties>
+<property name="skip" value="">
+</property>
+</properties>
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Empresas - Fluxos Críticos › deve editar uma empresa existente" classname="empresas-fixed.spec.ts" time="10.197">
+<properties>
+<property name="skip" value="">
+</property>
+</properties>
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Empresas - Fluxos Críticos › deve excluir uma empresa com confirmação" classname="empresas-fixed.spec.ts" time="10.106">
+<properties>
+<property name="skip" value="">
+</property>
+</properties>
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Empresas - Fluxos Críticos › deve filtrar empresas por status" classname="empresas-fixed.spec.ts" time="10.111">
+<properties>
+<property name="skip" value="">
+</property>
+</properties>
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Empresas - Fluxos Críticos › deve buscar empresas por nome" classname="empresas-fixed.spec.ts" time="10.069">
+<properties>
+<property name="skip" value="">
+</property>
+</properties>
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Empresas - Fluxos Críticos › deve alternar status de uma empresa" classname="empresas-fixed.spec.ts" time="10.071">
+<properties>
+<property name="skip" value="">
+</property>
+</properties>
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Empresas - Fluxos Críticos › deve selecionar múltiplas empresas para operação em lote" classname="empresas-fixed.spec.ts" time="10.026">
+</testcase>
+<testcase name="Empresas - Fluxos Críticos › deve ativar múltiplas empresas em lote" classname="empresas-fixed.spec.ts" time="10.745">
+</testcase>
+</testsuite>
+</testsuites>

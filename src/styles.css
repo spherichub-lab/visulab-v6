@@ -1,0 +1,46 @@
+/* VisuLab Global Styles */
+
+:root {
+    /* Brand Colors - Blue Theme */
+    --brand-accent: #2563eb;       /* Blue 600 */
+    --brand-accent-dark: #1e40af;  /* Blue 800 */
+}
+
+html.dark {
+    --brand-accent: #3b82f6;       /* Blue 500 for dark mode */
+    --brand-accent-dark: #60a5fa;  /* Blue 400 */
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+
+.no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+/* Custom Calendar Picker Icon Color */
+input[type="date"]::-webkit-calendar-picker-indicator {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2364748b'%3E%3Cpath d='M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9 2-2zm0 16H5V10h14v10zm0-12H5V6h14v2zm-7 5h5v5h-5z'/%3E%3C/svg%3E");
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: 20px;
+    cursor: pointer;
+}
+
+/* Dark Mode Calendar Icon override */
+html.dark input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+}
+
+/* Dropdown Selection Color Override */
+select option:checked,
+select:focus>option:checked {
+    background: var(--brand-accent) !important;
+    color: #ffffff !important;
+}

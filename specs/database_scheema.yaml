@@ -1,0 +1,90 @@
+# specs/database_schema.yaml
+
+# Este arquivo descreve o esquema do banco de dados Supabase.
+# A IA deve usar esta estrutura para criar todas as interações com o banco.
+
+tables:
+  - name: "empresas"
+    description: "Tabela de empresas (matrizes, filiais e fornecedores)."
+    columns:
+      - { name: "id", type: "UUID", constraints: ["PRIMARY KEY", "DEFAULT gen_random_uuid()"] }
+      - { name: "nome", type: "VARCHAR(255)", constraints: ["NOT NULL", "UNIQUE"] }
+      - { name: "tipo", type: "VARCHAR(50)", constraints: ["CHECK (tipo IN ('Matriz', 'Filial', 'Fornecedor'))"] }
+      - { name: "contato_nome", type: "VARCHAR(255)" }
+      - { name: "contato_email", type: "VARCHAR(255)" }
+      - { name: "status", type: "VARCHAR(50)", constraints: ["DEFAULT 'Ativa'", "CHECK (status IN ('Ativa', 'Inativa'))"] }
+      - { name: "deleted_at", type: "TIMESTAMP WITH TIME ZONE", description: "Soft delete" }
+      - { name: "created_at", type: "TIMESTAMP WITH TIME ZONE", constraints: ["DEFAULT NOW()"] }
+      - { name: "updated_at", type: "TIMESTAMP WITH TIME ZONE", constraints: ["DEFAULT NOW()"] }
+
+  - name: "usuarios"
+    description: "Tabela de usuários do sistema, vinculados a uma empresa."
+    columns:
+      - { name: "id", type: "UUID", constraints: ["PRIMARY KEY", "DEFAULT gen_random_uuid()"] }
+      - { name: "nome", type: "VARCHAR(255)", constraints: ["NOT NULL"] }
+      - { name: "email", type: "VARCHAR(255)", constraints: ["NOT NULL", "UNIQUE"] }
+      - { name: "empresa_id", type: "UUID", constraints: ["REFERENCES empresas(id)"] }
+      - { name: "role", type: "VARCHAR(50)", constraints: ["DEFAULT 'Usuário'", "CHECK (role IN ('Administrador', 'Usuário'))"] }
+      - { name: "status", type: "VARCHAR(50)", constraints: ["DEFAULT 'Active'", "CHECK (status IN ('Active', 'Offline', 'Pending', 'Inactive'))"] }
+      - { name: "last_active", type: "TIMESTAMP WITH TIME ZONE", constraints: ["DEFAULT NOW()"] }
+      - { name: "avatar_url", type: "TEXT" }
+      - { name: "initials", type: "VARCHAR(10)" }
+      - { name: "deleted_at", type: "TIMESTAMP WITH TIME ZONE", description: "Soft delete" }
+      - { name: "created_at", type: "TIMESTAMP WITH TIME ZONE", constraints: ["DEFAULT NOW()"] }
+      - { name: "updated_at", type: "TIMESTAMP WITH TIME ZONE", constraints: ["DEFAULT NOW()"] }
+
+  - name: "indices"
+    description: "Tabela de referência para índices de refração das lentes."
+    columns:
+      - { name: "id", type: "UUID", constraints: ["PRIMARY KEY", "DEFAULT gen_random_uuid()"] }
+      - { name: "nome", type: "VARCHAR(50)", constraints: ["NOT NULL", "UNIQUE"] }
+      - { name: "created_at", type: "TIMESTAMP WITH TIME ZONE", constraints: ["DEFAULT NOW()"] }
+
+  - name: "tratamentos"
+    description: "Tabela de referência para tratamentos das lentes."
+    columns:
+      - { name: "id", type: "UUID", constraints: ["PRIMARY KEY", "DEFAULT gen_random_uuid()"] }
+      - { name: "nome", type: "VARCHAR(255)", constraints: ["NOT NULL", "UNIQUE"] }
+      - { name: "created_at", type: "TIMESTAMP WITH TIME ZONE", constraints: ["DEFAULT NOW()"] }
+
+  - name: "tipos"
+    description: "Tabela de referência para tipos de lente (Incolor, Photo)."
+    columns:
+      - { name: "id", type: "UUID", constraints: ["PRIMARY KEY", "DEFAULT gen_random_uuid()"] }
+      - { name: "nome", type: "VARCHAR(50)", constraints: ["NOT NULL", "UNIQUE"] }
+      - { name: "created_at", type: "TIMESTAMP WITH TIME ZONE", constraints: ["DEFAULT NOW()"] }
+
+  - name: "faltas"
+    description: "Tabela principal para registrar as faltas de lentes."
+    columns:
+      - { name: "id", type: "UUID", constraints: ["PRIMARY KEY", "DEFAULT gen_random_uuid()"] }
+      - { name: "indice_id", type: "UUID", constraints: ["REFERENCES indices(id)"] }
+      - { name: "tratamento_id", type: "UUID", constraints: ["REFERENCES tratamentos(id)"] }
+      - { name: "tipo_id", type: "UUID", constraints: ["REFERENCES tipos(id)"] }
+      - { name: "empresa_id", type: "UUID", constraints: ["REFERENCES empresas(id)"] }
+      - { name: "usuario_id", type: "UUID", constraints: ["REFERENCES usuarios(id)"] }
+      - { name: "esf", type: "DECIMAL(4,2)", constraints: ["NOT NULL"] }
+      - { name: "cil", type: "DECIMAL(4,2)", constraints: ["NOT NULL"] }
+      - { name: "quantidade", type: "INTEGER", constraints: ["DEFAULT 1"] }
+      - { name: "created_at", type: "TIMESTAMP WITH TIME ZONE", constraints: ["DEFAULT NOW()"] }
+      - { name: "updated_at", type: "TIMESTAMP WITH TIME ZONE", constraints: ["DEFAULT NOW()"] }
+
+  - name: "compras"
+    description: "Tabela para registrar as compras de lentes."
+    columns:
+      - { name: "id", type: "UUID", constraints: ["PRIMARY KEY", "DEFAULT gen_random_uuid()"] }
+      - { name: "fornecedor", type: "VARCHAR(255)", constraints: ["NOT NULL"] }
+      - { name: "data_compra", type: "DATE", constraints: ["NOT NULL"] }
+      - { name: "valor_total", type: "DECIMAL(10,2)", constraints: ["NOT NULL"] }
+      - { name: "status", type: "VARCHAR(50)", constraints: ["DEFAULT 'Pendente'", "CHECK (status IN ('Pendente', 'Pago', 'Cancelado'))"] }
+      - { name: "descricao", type: "TEXT" }
+      - { name: "created_at", type: "TIMESTAMP WITH TIME ZONE", constraints: ["DEFAULT NOW()"] }
+      - { name: "updated_at", type: "TIMESTAMP WITH TIME ZONE", constraints: ["DEFAULT NOW()"] }
+
+rls_policies_summary:
+  - "O acesso aos dados é controlado por Row Level Security (RLS)."
+  - "A função `auth.uid()` retorna o ID do usuário logado."
+  - "A função `auth.is_admin()` retorna `true` se o usuário logado tiver a role 'Administrador'."
+  - "Usuários comuns só podem ver e manipular dados da sua própria empresa (`empresa_id`)."
+  - "Apenas administradores podem gerenciar usuários, empresas e compras."
+  - "Tabelas de referência (`indices`, `tratamentos`, `tipos`) são de leitura para todos, mas apenas administradores podem escrever."

@@ -1,0 +1,24 @@
+# specs/backend_focus.yaml
+
+directive: "FOCUS_BACKEND_ONLY"
+
+ai_primary_role: "Desenvolvedor de Backend e Lógica de Negócios"
+
+core_responsibilities:
+  - "Desenvolver e manter a camada de serviço que interage com o Supabase."
+  - "Implementar todas as operações CRUD (Criar, Ler, Atualizar, Deletar) para as tabelas do banco de dados."
+  - "Gerenciar o estado de autenticação do usuário e a lógica de autorização."
+  - "Garantir que todas as interações com o banco de dados respeitem as políticas de Row Level Security (RLS)."
+  - "Implementar validações de dados no lado do cliente (no serviço) antes de enviar para o Supabase."
+  - "Estruturar o código de forma limpa e modular, seguindo o padrão de Camada de Serviço (Service Layer)."
+
+strict_restrictions:
+  - "NÃO MODIFICAR ARQUIVOS DO FRONTEND sob nenhuma circunstância, a menos que explicitamente solicitado com o comando `--frontend-modify`."
+  - "Não criar componentes de UI (ex: `.jsx`, `.vue`, `.css`)."
+  - "Não alterar arquivos de roteamento do frontend."
+  - "Sua área de atuação é a pasta `src/services/` e arquivos de configuração relacionados ao backend (como `src/lib/supabaseClient.js`)."
+
+interaction_pattern:
+  - "Ao receber uma solicitação para criar uma nova funcionalidade (ex: 'adicionar uma nova falta'), gere o código necessário no serviço correspondente (ex: `src/services/faltasService.js`)."
+  - "Forneça exemplos de como o frontend *poderia* consumir essa função, mas não implemente o código do frontend."
+  - "Se uma lógica de negócio for solicitada, implemente-a dentro das funções de serviço."

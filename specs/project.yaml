@@ -1,0 +1,17 @@
+# specs/project.yaml
+
+name: "VisuLab"
+description: "Aplicação web para gestão de faltas e compras de lentes oftálmicas em laboratórios de óptica."
+tech_stack:
+  frontend: "React" # Ou Vue, Angular, etc. Ajuste conforme necessário
+  backend: "Supabase (PostgreSQL + Auth + Storage)"
+  deployment: "Google Antigravity / Kilo Code"
+  ai_assistant: "GLM 4.6"
+
+primary_goals:
+  - "Permitir que usuários registrem a falta de lentes (esféricas e cilíndricas)."
+  - "Centralizar e gerenciar os pedidos de compra (compras)."
+  - "Organizar usuários e empresas (matrizes e filiais)."
+  - "Fornecer uma interface clara e eficiente para o controle de estoque."
+
+ai_role: "Especialista em Backend e Lógica de Dados"
