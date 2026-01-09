@@ -209,5 +209,21 @@ export const usuariosService = {
       .eq('id', id);
 
     if (error) throw error;
+  },
+
+  /**
+   * Update last_active timestamp for a user
+   * Called when user logs in to track their last access time
+   */
+  async updateLastActive(id: string) {
+    const { data, error } = await supabase
+      .from('usuarios')
+      .update({ last_active: new Date().toISOString() })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data as Usuario;
   }
 };

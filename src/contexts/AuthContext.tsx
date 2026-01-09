@@ -15,6 +15,7 @@ import React, { createContext, useContext, useReducer, useEffect, useCallback, u
 import { LoginCredentials, AuthTokens, AuthUser } from '../types/api/api.types';
 import { showSuccess, showWarning } from '../utils/errorHandler';
 import { supabaseAuthService, SupabaseAuthService, type AuthSession } from '../services/auth/SupabaseAuthService';
+import { usuariosService } from '../../services/usuariosService';
 
 // Debug flag - set to false to disable auth debug logging in production
 const DEBUG_AUTH = import.meta.env.DEV;
@@ -786,6 +787,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                     role: role
                 });
                 throw new Error('User is not assigned to a company. Please contact administrator.');
+            }
+
+            // Update last_active timestamp to track user's last login
+            try {
+                await usuariosService.updateLastActive(session.user.id);
+            } catch (error) {
+                console.warn('⚠️ [AUTH WARNING] Failed to update last_active timestamp:', error);
+                // Don't fail login if this fails - it's a non-critical operation
             }
 
             // Include empresa_id, role, company, and auth_user_id in user object
