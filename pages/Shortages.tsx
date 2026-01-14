@@ -185,11 +185,14 @@ const Shortages: React.FC = () => {
     const { name, value } = e.target;
     if (!value) return;
 
+    // Replace comma with dot for decimal separator
+    const normalizedValue = value.replace(',', '.');
+
     if (name === 'sphere') {
-      let num = parseFloat(value);
+      let num = parseFloat(normalizedValue);
       if (isNaN(num)) return;
 
-      if (Math.abs(num) >= 25 && !value.includes('.')) {
+      if (Math.abs(num) >= 25 && !normalizedValue.includes('.')) {
         num = num / 100;
       }
 
@@ -205,14 +208,14 @@ const Shortages: React.FC = () => {
     }
 
     if (name === 'cylinder') {
-      let num = parseFloat(value);
+      let num = parseFloat(normalizedValue);
 
       if (isNaN(num)) {
         setCylinderError(true);
         return;
       }
 
-      if (Math.abs(num) >= 25 && !value.includes('.')) {
+      if (Math.abs(num) >= 25 && !normalizedValue.includes('.')) {
         num = num / 100;
       }
 

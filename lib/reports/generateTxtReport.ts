@@ -9,6 +9,7 @@ interface ReportFilter {
   company?: string;
   index?: string;
   treatment?: string;
+  type?: string;
   title?: string;
   groupByLabel?: string;
   hideQuantity?: boolean;
@@ -47,6 +48,9 @@ export const generateTxtReport = (
   }
   if (filters.treatment && filters.treatment !== 'Todos') {
     content += `Tratamento: ${filters.treatment}\n`;
+  }
+  if (filters.type && filters.type !== 'Todos') {
+    content += `Tipo: ${filters.type}\n`;
   }
   if (filters.startDate && filters.endDate) {
     // Parse dates as local time to avoid timezone issues

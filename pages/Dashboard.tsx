@@ -9,6 +9,8 @@ import { faltasService } from '../services/faltasService';
 import { empresasService } from '../services/empresasService';
 import { indicesService } from '../services/indicesService';
 import { tratamentosService } from '../services/tratamentosService';
+import { tiposService } from '../services/tiposService';
+import { usuariosService } from '../services/usuariosService';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { format } from 'date-fns';
@@ -17,8 +19,12 @@ import { FeedbackState } from '../src/components/shared/index';
 import { Falta } from '../lib/types/database/entities.types';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../src/contexts/AuthContext';
-import { isAdmin } from '../lib/utils/visibility';
+import { isAdmin, canUpdateFalta, canDeleteFalta } from '../lib/utils/visibility';
 import { Toast } from '../components/Toast';
+import { Modal } from '../components/Modal';
+import { EditFaltaModal } from '../components/EditFaltaModal';
+import { DeleteConfirmationModal } from '../components/DeleteConfirmationModal';
+import type { SelectOption } from '../components/CustomSelect';
 
 // --- Distinct Palette Colors ---
 const INDEX_COLORS: Record<string, string> = {
@@ -129,8 +135,41 @@ const Dashboard: React.FC = () => {
   const [error, setError] = useState<Error | null>(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
+  // Edit Falta Modal state
+  const [editFaltaModal, setEditFaltaModal] = useState<{
+    isOpen: boolean;
+    falta: Falta | null;
+  }>({ isOpen: false, falta: null });
+
+  // Delete Confirmation Modal state
+  const [deleteConfirmationModal, setDeleteConfirmationModal] = useState<{
+    isOpen: boolean;
+    falta: Falta | null;
+  }>({ isOpen: false, falta: null });
+
+  // Activity date filters
+  const [activityDateFilters, setActivityDateFilters] = useState({
+    startDate: '',
+    endDate: ''
+  });
+
+  // Activity user filter (only for ADMIN)
+  const [activityUserFilter, setActivityUserFilter] = useState<string>('');
+
+  // Users options for filter (only for ADMIN)
+  const [userOptions, setUserOptions] = useState<SelectOption[]>([]);
+
+  // Show all activities modal
+  const [showAllActivitiesModal, setShowAllActivitiesModal] = useState(false);
+
+  // Full filtered activities for the modal
+  const [allFilteredActivities, setAllFilteredActivities] = useState<any[]>([]);
+
+  // Menu state for activity items
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+
   // Toast state
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'warning'; isVisible: boolean }>({
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error'; isVisible: boolean }>({
     message: '',
     type: 'success',
     isVisible: false
@@ -140,6 +179,7 @@ const Dashboard: React.FC = () => {
   const [companyOptions, setCompanyOptions] = useState<string[]>(['Todas']);
   const [indexOptions, setIndexOptions] = useState<string[]>(['Todos']);
   const [treatmentOptions, setTreatmentOptions] = useState<string[]>(['Todos']);
+  const [typeOptions, setTypeOptions] = useState<string[]>(['Todos']);
 
   // Refs for PDF capture
   const cardARef = useRef<HTMLDivElement>(null);
@@ -155,6 +195,7 @@ const Dashboard: React.FC = () => {
     endDate: '',
     index: 'Todos',
     treatment: 'Todos',
+    type: 'Todos',
     company: 'Todas'
   });
 
@@ -177,13 +218,95 @@ const Dashboard: React.FC = () => {
   };
 
   // Toast handlers
-  const showToast = useCallback((message: string, type: 'success' | 'error' | 'warning') => {
+  const showToast = useCallback((message: string, type: 'success' | 'error') => {
     setToast({ message, type, isVisible: true });
   }, []);
 
   const closeToast = useCallback(() => {
     setToast(prev => ({ ...prev, isVisible: false }));
   }, []);
+
+  // Handler for opening edit modal
+  const handleEditFalta = (falta: Falta) => {
+    if (!canUpdateFalta(currentUser, falta)) {
+      showToast('Você não tem permissão para editar este registro', 'error');
+      return;
+    }
+    setEditFaltaModal({ isOpen: true, falta });
+  };
+
+  // Handler for saving falta edit
+  const handleSaveFaltaEdit = async (faltaId: string, updates: Partial<Falta>) => {
+    try {
+      await faltasService.updateWithPermissionCheck(currentUser, faltaId, updates);
+      showToast('Registro atualizado com sucesso!', 'success');
+      setEditFaltaModal({ isOpen: false, falta: null });
+      setRefreshTrigger(prev => prev + 1);
+    } catch (error: any) {
+      showToast(error.message || 'Erro ao atualizar registro', 'error');
+    }
+  };
+
+  // Handler for deleting falta
+  const handleDeleteFalta = async (faltaId: string) => {
+    try {
+      await faltasService.deleteWithPermissionCheck(currentUser, faltaId);
+      showToast('Registro excluído com sucesso!', 'success');
+      setDeleteConfirmationModal({ isOpen: false, falta: null });
+      setRefreshTrigger(prev => prev + 1);
+    } catch (error: any) {
+      showToast(error.message || 'Erro ao excluir registro', 'error');
+    }
+  };
+
+  // Handler for activity date filter change
+  const handleActivityDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setActivityDateFilters(prev => ({ ...prev, [name]: value }));
+  };
+
+  // Handler for activity user filter change
+  const handleActivityUserChange = (value: string) => {
+    setActivityUserFilter(value);
+  };
+
+  // Handler for applying activity filters
+  const handleApplyActivityFilters = () => {
+    console.log('🔍 [DASHBOARD] Applying activity filters:', {
+      dateFilters: activityDateFilters,
+      userFilter: activityUserFilter
+    });
+    setRefreshTrigger(prev => prev + 1);
+  };
+
+  // Handler for opening all activities modal
+  const handleOpenAllActivitiesModal = () => {
+    console.log('🔍 [DASHBOARD] Opening all activities modal with filters:', {
+      dateFilters: activityDateFilters,
+      userFilter: activityUserFilter
+    });
+    setShowAllActivitiesModal(true);
+  };
+
+  // Handler for closing all activities modal
+  const handleCloseAllActivitiesModal = () => {
+    setShowAllActivitiesModal(false);
+  };
+
+  // Menu handlers
+  const handleToggleMenu = (faltaId: string, event: React.MouseEvent) => {
+    event.stopPropagation();
+    setOpenMenuId(openMenuId === faltaId ? null : faltaId);
+  };
+
+  const handleCloseMenu = () => {
+    setOpenMenuId(null);
+  };
+
+  const handleMenuAction = (action: () => void) => {
+    action();
+    setOpenMenuId(null);
+  };
 
   // Memoized fetch function to avoid recreating on every render
   const fetchDashboardData = useCallback(async () => {
@@ -200,15 +323,25 @@ const Dashboard: React.FC = () => {
 
     try {
       // Load Options in parallel
-      const [empresas, indices, tratamentos] = await Promise.all([
+      const [empresas, indices, tratamentos, tipos, usuarios] = await Promise.all([
         empresasService.getAll(),
         indicesService.getAllActive(),
-        tratamentosService.getAllActive()
+        tratamentosService.getAllActive(),
+        tiposService.getAllActive(),
+        usuariosService.getAll()
       ]);
 
       setCompanyOptions(['Todas', ...empresas.filter(e => e.tipo === 'Matriz' || e.tipo === 'Filial').map(e => e.nome)]);
       setIndexOptions(['Todos', ...indices.map(i => i.nome)]);
       setTreatmentOptions(['Todos', ...tratamentos.map(t => t.nome)]);
+      setTypeOptions(['Todos', ...tipos.map(t => t.nome)]);
+
+      // Set user options for ADMIN filter
+      if (currentUser?.role === 'Administrador') {
+        setUserOptions(
+          usuarios.map(u => ({ value: u.id, label: u.nome || u.email || 'Usuário' }))
+        );
+      }
 
       // Busca dados reais do backend com role-based filtering
       console.log('📊 [DASHBOARD] Fetching data from services...');
@@ -276,7 +409,9 @@ const Dashboard: React.FC = () => {
           esfCil: esfCilDisplay,
           time: item.created_at ? formatTimeAgo(new Date(item.created_at)) : '-',
           rawDate: item.created_at ? new Date(item.created_at) : new Date(),
-          type: item.tipos?.nome || 'N/A'
+          type: item.tipos?.nome || 'N/A',
+          // Include full Falta object for permission checks
+          falta: item
         };
       });
 
@@ -332,14 +467,54 @@ const Dashboard: React.FC = () => {
 
       setBarData(cardBarData);
 
-      // 5. Use filtered data for recent activity
+      // 5. Use filtered data for recent activity with date filters
+      console.log('🔍 [DASHBOARD] filteredData before activity filters:', {
+        length: filteredData.length,
+        sample: filteredData.slice(0, 2)
+      });
+
       if (!filteredData || filteredData.length === 0) {
+        console.warn('⚠️ [DASHBOARD] No filteredData available, setting empty states');
         setRecentShortages([]);
         setPieData([]);
         return;
       }
 
-      setRecentShortages(filteredData.slice(0, 4));
+      // Apply activity date filters
+      let activityFilteredData = filteredData;
+      if (activityDateFilters.startDate || activityDateFilters.endDate) {
+        const parseLocalDate = (dateStr: string) => {
+          const [year, month, day] = dateStr.split('-').map(Number);
+          return new Date(year, month - 1, day);
+        };
+
+        if (activityDateFilters.startDate) {
+          const startDate = parseLocalDate(activityDateFilters.startDate);
+          startDate.setHours(0, 0, 0, 0);
+          activityFilteredData = activityFilteredData.filter(item => item.rawDate >= startDate);
+        }
+
+        if (activityDateFilters.endDate) {
+          const endDate = parseLocalDate(activityDateFilters.endDate);
+          endDate.setHours(23, 59, 59, 999);
+          activityFilteredData = activityFilteredData.filter(item => item.rawDate <= endDate);
+        }
+      }
+
+      // Apply activity user filter (only for ADMIN)
+      if (currentUser?.role === 'Administrador' && activityUserFilter) {
+        activityFilteredData = activityFilteredData.filter(item => item.falta?.usuario_id === activityUserFilter);
+      }
+
+      console.log('🔍 [DASHBOARD] activityFilteredData after all filters:', {
+        length: activityFilteredData.length,
+        dateFilters: activityDateFilters,
+        userFilter: activityUserFilter,
+        sample: activityFilteredData.slice(0, 2)
+      });
+
+      setRecentShortages(activityFilteredData.slice(0, 4));
+      setAllFilteredActivities(activityFilteredData);
 
       // 3. Calculate Treatment Stats from filtered data
       const treatmentCounts: Record<string, number> = {};
@@ -377,7 +552,7 @@ const Dashboard: React.FC = () => {
     } finally {
       setIsChartLoading(false);
     }
-  }, [currentUser]); // Only depend on currentUser, not analyticsFilters
+  }, [currentUser, activityDateFilters, activityUserFilter]); // Depend on filters to apply them
 
   // Main data fetching effect
   useEffect(() => {
@@ -452,10 +627,22 @@ const Dashboard: React.FC = () => {
     };
   }, []); // Run once on mount
 
+  // Close menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = () => {
+      setOpenMenuId(null);
+    };
+
+    document.addEventListener('click', handleClickOutside);
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, []);
+
   const handleExportTxt = () => {
     // Check if user is admin - regular users cannot generate TXT reports
     if (currentUser?.role !== 'Administrador') {
-      showToast('Acesso negado: Apenas administradores podem gerar relatórios TXT.', 'warning');
+      showToast('Acesso negado: Apenas administradores podem gerar relatórios TXT.', 'error');
       return;
     }
 
@@ -477,6 +664,11 @@ const Dashboard: React.FC = () => {
     // Filter by treatment
     if (reportFilters.treatment && reportFilters.treatment !== 'Todos') {
       filteredReportData = filteredReportData.filter(item => item.treatment === reportFilters.treatment);
+    }
+
+    // Filter by type
+    if (reportFilters.type && reportFilters.type !== 'Todos') {
+      filteredReportData = filteredReportData.filter(item => item.type === reportFilters.type);
     }
 
     // Filter by date range
@@ -505,6 +697,7 @@ const Dashboard: React.FC = () => {
         endDate: reportFilters.endDate,
         index: reportFilters.index,
         treatment: reportFilters.treatment,
+        type: reportFilters.type,
         groupByLabel: 'ÍNDICE DE REFRAÇÃO'
       },
       filteredReportData
@@ -767,6 +960,66 @@ const Dashboard: React.FC = () => {
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-lg font-bold text-slate-900 dark:text-white">Atividade Recente</h3>
             </div>
+
+            {/* Date Filters */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide ml-1">De</label>
+                <input
+                  type="date"
+                  name="startDate"
+                  value={activityDateFilters.startDate}
+                  onChange={handleActivityDateChange}
+                  className="w-full rounded-xl border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 text-sm font-semibold text-slate-700 dark:text-white focus:ring-primary focus:border-primary px-3 py-2.5 cursor-pointer"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide ml-1">Até</label>
+                <input
+                  type="date"
+                  name="endDate"
+                  value={activityDateFilters.endDate}
+                  onChange={handleActivityDateChange}
+                  className="w-full rounded-xl border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 text-sm font-semibold text-slate-700 dark:text-white focus:ring-primary focus:border-primary px-3 py-2.5 cursor-pointer"
+                />
+              </div>
+            </div>
+
+            {/* User Filter and Apply Button (only for ADMIN) */}
+            {currentUser?.role === 'Administrador' && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide ml-1">Usuário</label>
+                  <CustomSelect
+                    value={activityUserFilter}
+                    onChange={handleActivityUserChange}
+                    options={userOptions}
+                    placeholder="Todos os usuários"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide ml-1">&nbsp;</label>
+                  <button
+                    onClick={handleOpenAllActivitiesModal}
+                    className="w-full px-4 py-2.5 bg-slate-900 dark:bg-primary text-white rounded-xl font-bold text-sm shadow-lg shadow-slate-900/20 dark:shadow-primary/20 hover:shadow-xl hover:-translate-y-0.5 hover:bg-slate-800 dark:hover:bg-primary-dark transition-all flex items-center justify-center gap-2"
+                  >
+                    <Icon name="filter_list" className="!text-base" />
+                    Aplicar Filtros
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Apply Filters Button (for non-ADMIN users) */}
+            {currentUser?.role !== 'Administrador' && (
+              <button
+                onClick={handleOpenAllActivitiesModal}
+                className="px-3 py-2 bg-slate-900 dark:bg-primary text-white rounded-xl font-bold text-sm shadow-lg shadow-slate-900/20 dark:shadow-primary/20 hover:shadow-xl hover:-translate-y-0.5 hover:bg-slate-800 dark:hover:bg-primary-dark transition-all flex items-center justify-center gap-2 mb-6"
+              >
+                <Icon name="filter_list" className="!text-base" />
+                Aplicar Filtros
+              </button>
+            )}
             <div className="space-y-6 flex-1">
               {isChartLoading ? (
                 <FeedbackState
@@ -814,8 +1067,43 @@ const Dashboard: React.FC = () => {
                           <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">{item.user}</span>
                         </div>
                       </div>
-                      <div className="flex items-center shrink-0 pl-2">
+                      <div className="flex items-center shrink-0 gap-4 pl-2 relative">
                         <span className="text-[10px] text-slate-400 font-medium whitespace-nowrap text-right">{item.time}</span>
+                        {/* Menu button - only show if user has any permission */}
+                        {item.falta && (canUpdateFalta(currentUser, item.falta) || canDeleteFalta(currentUser, item.falta)) && (
+                          <div className="relative">
+                            <button
+                              onClick={(e) => handleToggleMenu(item.falta.id, e)}
+                              className="text-slate-900 dark:text-primary hover:text-slate-700 dark:hover:text-primary/80 transition-colors p-1.5 flex flex-col items-center justify-center gap-0.5"
+                              title="Opções"
+                            >
+                              <span className="w-1 h-1 bg-current rounded-full"></span>
+                              <span className="w-1 h-1 bg-current rounded-full"></span>
+                              <span className="w-1 h-1 bg-current rounded-full"></span>
+                            </button>
+                            {/* Dropdown menu */}
+                            {openMenuId === item.falta.id && (
+                              <div className="absolute right-0 top-full mt-1 bg-white dark:bg-slate-800 rounded-lg shadow-lg border border-slate-200 dark:border-slate-700 py-1 z-50 min-w-[100px] flex flex-col">
+                                {canUpdateFalta(currentUser, item.falta) && (
+                                  <button
+                                    onClick={() => handleMenuAction(() => handleEditFalta(item.falta))}
+                                    className="w-full px-4 py-2 text-left text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                                  >
+                                    Editar
+                                  </button>
+                                )}
+                                {canDeleteFalta(currentUser, item.falta) && (
+                                  <button
+                                    onClick={() => handleMenuAction(() => setDeleteConfirmationModal({ isOpen: true, falta: item.falta }))}
+                                    className="w-full px-4 py-2 text-left text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                                  >
+                                    Excluir
+                                  </button>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -879,6 +1167,14 @@ const Dashboard: React.FC = () => {
                       disabled={reportFilters.index === '1.49'}
                     />
                   </div>
+                  <div className="space-y-1.5">
+                    <CustomSelect
+                      label="Tipo"
+                      value={reportFilters.type}
+                      onChange={(val) => handleReportFilterChange('type', val)}
+                      options={typeOptions}
+                    />
+                  </div>
                   {currentUser?.role === 'Administrador' && (
                     <div className="space-y-1.5">
                       <CustomSelect
@@ -902,6 +1198,124 @@ const Dashboard: React.FC = () => {
           </div>
 
         </div>
+
+        {/* All Activities Modal */}
+        <Modal
+          isOpen={showAllActivitiesModal}
+          onClose={handleCloseAllActivitiesModal}
+          title="Todas as Atividades"
+        >
+          <div className="max-h-[500px] overflow-y-auto space-y-6">
+            {isChartLoading ? (
+              <FeedbackState
+                type="loading"
+                variant="inline"
+                size="sm"
+              />
+            ) : error ? (
+              <FeedbackState
+                type="error"
+                title="Erro ao carregar atividades"
+                description="Ocorreu um erro ao carregar as atividades."
+                onRetry={() => window.location.reload()}
+                variant="inline"
+                size="sm"
+              />
+            ) : allFilteredActivities.length === 0 ? (
+              <FeedbackState
+                type="empty"
+                title="Nenhuma atividade encontrada"
+                description="Não há atividades encontradas com os filtros aplicados."
+                variant="inline"
+                size="sm"
+              />
+            ) : (
+              allFilteredActivities.map((item, idx) => (
+                <div key={idx} className="flex gap-4 relative">
+                  {idx !== allFilteredActivities.length - 1 && (
+                    <div className="absolute left-[20px] top-10 bottom-[-24px] w-px bg-slate-100 dark:bg-slate-700 -translate-x-1/2 z-0"></div>
+                  )}
+
+                  <div className={`h-10 w-10 rounded-full flex items-center justify-center text-[11px] font-bold border-2 border-white dark:border-surface-dark shadow-sm z-10 relative shrink-0 ${getIndexColorClass(item.index)}`}>
+                    {item.index}
+                  </div>
+
+                  <div className="flex-1 flex items-center justify-between min-w-0 py-2">
+                    <div className="flex flex-col gap-0.5 mr-2 min-w-0">
+                      <div className="flex flex-wrap items-baseline gap-2">
+                        <span className="text-sm font-bold text-slate-900 dark:text-white whitespace-nowrap">{item.esfCil}</span>
+                        <span className="text-xs text-slate-500 dark:text-slate-400 font-medium whitespace-nowrap truncate">
+                          {item.type && item.type.toLowerCase() === 'photo' ? `Photo ${item.treatment}` : item.treatment}
+                        </span>
+                      </div>
+                      <div className="flex items-center">
+                        <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">{item.user}</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center shrink-0 gap-4 pl-2 relative">
+                      <span className="text-[10px] text-slate-400 font-medium whitespace-nowrap text-right">{item.time}</span>
+                      {/* Menu button - only show if user has any permission */}
+                      {item.falta && (canUpdateFalta(currentUser, item.falta) || canDeleteFalta(currentUser, item.falta)) && (
+                        <div className="relative">
+                          <button
+                            onClick={(e) => handleToggleMenu(item.falta.id, e)}
+                            className="text-slate-900 dark:text-primary hover:text-slate-700 dark:hover:text-primary/80 transition-colors p-1.5 flex flex-col items-center justify-center gap-0.5"
+                            title="Opções"
+                          >
+                            <span className="w-1 h-1 bg-current rounded-full"></span>
+                            <span className="w-1 h-1 bg-current rounded-full"></span>
+                            <span className="w-1 h-1 bg-current rounded-full"></span>
+                          </button>
+                          {/* Dropdown menu */}
+                          {openMenuId === item.falta.id && (
+                            <div className="absolute right-0 top-full mt-1 bg-white dark:bg-slate-800 rounded-lg shadow-lg border border-slate-200 dark:border-slate-700 py-1 z-50 min-w-[100px] flex flex-col">
+                              {canUpdateFalta(currentUser, item.falta) && (
+                                <button
+                                  onClick={() => handleMenuAction(() => handleEditFalta(item.falta))}
+                                  className="w-full px-4 py-2 text-left text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                                >
+                                  Editar
+                                </button>
+                              )}
+                              {canDeleteFalta(currentUser, item.falta) && (
+                                <button
+                                  onClick={() => handleMenuAction(() => setDeleteConfirmationModal({ isOpen: true, falta: item.falta }))}
+                                  className="w-full px-4 py-2 text-left text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                                >
+                                  Excluir
+                                </button>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </Modal>
+
+        {/* Edit Falta Modal */}
+        <EditFaltaModal
+          isOpen={editFaltaModal.isOpen}
+          onClose={() => setEditFaltaModal({ isOpen: false, falta: null })}
+          falta={editFaltaModal.falta}
+          onSave={handleSaveFaltaEdit}
+          currentUser={currentUser}
+        />
+
+        {/* Delete Confirmation Modal */}
+        <DeleteConfirmationModal
+          isOpen={deleteConfirmationModal.isOpen}
+          onClose={() => setDeleteConfirmationModal({ isOpen: false, falta: null })}
+          onEdit={() => {
+            setDeleteConfirmationModal({ isOpen: false, falta: null });
+            handleEditFalta(deleteConfirmationModal.falta);
+          }}
+          onDelete={() => handleDeleteFalta(deleteConfirmationModal.falta?.id)}
+        />
       </div>
     </>
   );

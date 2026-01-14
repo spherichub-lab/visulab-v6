@@ -44,11 +44,12 @@ export function canUpdateFaltaForCompany(user: AuthUser, empresaId: string): boo
 }
 
 /**
- * Check if user can delete faltas
- * IMPORTANT: NO ONE can delete faltas
+ * Check if user can delete a specific falta record
+ * Admins can delete any falta, regular users can only delete their own
  */
-export function canDeleteFalta(user: AuthUser): boolean {
-    return false; // Delete is not allowed for any role
+export function canDeleteFalta(user: AuthUser, falta: { usuario_id: string }): boolean {
+    if (isAdmin(user)) return true;
+    return user.id === falta.usuario_id;
 }
 
 /**
@@ -67,6 +68,15 @@ export function getFaltasVisibilityFilter(user: AuthUser): {
     }
 
     throw new Error('User has no empresa_id assigned');
+}
+
+/**
+ * Check if user can update a specific falta record
+ * Admins can update any falta, regular users can only update their own
+ */
+export function canUpdateFalta(user: AuthUser, falta: { usuario_id: string }): boolean {
+    if (isAdmin(user)) return true;
+    return user.id === falta.usuario_id;
 }
 
 /**

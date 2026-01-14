@@ -162,6 +162,49 @@ export const faltasService = {
     return data as Falta;
   },
 
+  /**
+   * Update a falta with permission check
+   * Admins can update any falta, regular users can only update their own
+   */
+  async updateWithPermissionCheck(user: AuthUser, faltaId: string, updates: Partial<Falta>) {
+    console.log('🔍 [FALTAS SERVICE] updateWithPermissionCheck called:', {
+      userId: user.id,
+      userRole: user.role,
+      faltaId
+    });
+
+    // First, fetch the falta to check ownership
+    const { data: existingFalta, error: fetchError } = await supabase
+      .from('faltas')
+      .select('usuario_id')
+      .eq('id', faltaId)
+      .single();
+
+    if (fetchError) {
+      console.error('❌ [FALTAS ERROR] Failed to fetch falta for permission check:', fetchError);
+      throw new Error('Falta not found');
+    }
+
+    if (!existingFalta) {
+      throw new Error('Falta not found');
+    }
+
+    // Check if user has permission to update this falta
+    if (!isAdmin(user) && existingFalta.usuario_id !== user.id) {
+      console.error('❌ [FALTAS ERROR] Permission denied:', {
+        userId: user.id,
+        faltaUserId: existingFalta.usuario_id,
+        userRole: user.role
+      });
+      throw new Error('Você não tem permissão para editar este registro');
+    }
+
+    console.log('✅ [FALTAS SERVICE] Permission granted, updating falta:', faltaId);
+
+    // Proceed with update
+    return this.update(faltaId, updates);
+  },
+
   // Atualizar apenas o status (Workflow)
   async updateStatus(id: string, status: string, etapa?: number) {
     const updates: any = { status, updated_at: new Date().toISOString() };
@@ -179,10 +222,55 @@ export const faltasService = {
   },
 
   /**
-   * Delete operation is NOT ALLOWED for faltas
-   * This is a business rule: faltas records are permanent
+   * Delete operation with permission check
+   * Admins can delete any falta, regular users can only delete their own
    */
-  async delete(id: string): Promise<never> {
-    throw new Error('Delete operations are not allowed for faltas. This is a business rule to maintain data integrity.');
+  async deleteWithPermissionCheck(user: AuthUser, faltaId: string) {
+    console.log('🔍 [FALTAS SERVICE] deleteWithPermissionCheck called:', {
+      userId: user.id,
+      userRole: user.role,
+      faltaId
+    });
+
+    // First, fetch the falta to check ownership
+    const { data: existingFalta, error: fetchError } = await supabase
+      .from('faltas')
+      .select('usuario_id')
+      .eq('id', faltaId)
+      .single();
+
+    if (fetchError) {
+      console.error('❌ [FALTAS ERROR] Failed to fetch falta for permission check:', fetchError);
+      throw new Error('Falta not found');
+    }
+
+    if (!existingFalta) {
+      throw new Error('Falta not found');
+    }
+
+    // Check if user has permission to delete this falta
+    if (!isAdmin(user) && existingFalta.usuario_id !== user.id) {
+      console.error('❌ [FALTAS ERROR] Permission denied:', {
+        userId: user.id,
+        faltaUserId: existingFalta.usuario_id,
+        userRole: user.role
+      });
+      throw new Error('Você não tem permissão para excluir este registro');
+    }
+
+    console.log('✅ [FALTAS SERVICE] Permission granted, deleting falta:', faltaId);
+
+    // Proceed with deletion
+    const { error: deleteError } = await supabase
+      .from('faltas')
+      .delete()
+      .eq('id', faltaId);
+
+    if (deleteError) {
+      console.error('❌ [FALTAS ERROR] Failed to delete falta:', deleteError);
+      throw deleteError;
+    }
+
+    console.log('✅ [FALTAS SERVICE] Successfully deleted falta:', faltaId);
   }
 };
