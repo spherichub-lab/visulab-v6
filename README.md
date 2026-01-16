@@ -1,20 +1,53 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# VisuLab
 
-# Run and deploy your AI Studio app
+Web application for optical laboratory inventory shortage management.
 
-This contains everything you need to run your app locally.
+## Problem
+Optical labs frequently face emergency purchases, high logistics costs, and delivery delays due to poor visibility of high-demand lenses.
 
-View your app in AI Studio: https://ai.studio/apps/drive/1_e9zPWxEBJrACJn2JT0NjdyXxcKTzByl
+## Solution
+VisuLab transforms daily shortage records into actionable purchase intelligence, enabling:
+- Smarter buying decisions
+- Cost reduction
+- Better customer delivery performance
 
-## Run Locally
+## Key Features
+- Real-time dashboard with KPIs
+- Smart shortage logging (optical validations)
+- Purchase management
+- Multi-company support (HQ / Branch)
+- Role-based access control (RBAC)
+- Exportable reports
+- Real-time updates (Supabase Realtime)
 
-**Prerequisites:**  Node.js
+## Tech Stack
+Frontend:
+- React 18
+- TypeScript
+- Tailwind CSS
+- Vite
 
+Backend:
+- Supabase (PostgreSQL, Auth, Realtime)
+- Row Level Security (RLS)
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+Testing:
+- Vitest
+- Playwright
+
+## Security
+- Row Level Security (RLS) at database level
+- Role-based permissions (Admin / User)
+- Company-level data isolation
+
+## Architecture
+- Presentation Layer (React components/pages)
+- Service Layer (business logic)
+- Repository Layer (data access abstraction)
+- Supabase integration with RLS-aware queries
+
+## Getting Started
+
+```bash
+npm install
+npm run dev
